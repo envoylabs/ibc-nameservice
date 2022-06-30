@@ -1,0 +1,50 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "ExecuteMsg",
+  "oneOf": [
+    {
+      "type": "object",
+      "required": [
+        "add_ibc_denom"
+      ],
+      "properties": {
+        "add_ibc_denom": {
+          "type": "object",
+          "required": [
+            "base_denom",
+            "ibc_denom"
+          ],
+          "properties": {
+            "base_denom": {
+              "type": "string"
+            },
+            "ibc_denom": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "required": [
+        "remove_ibc_denom"
+      ],
+      "properties": {
+        "remove_ibc_denom": {
+          "type": "object",
+          "required": [
+            "ibc_denom"
+          ],
+          "properties": {
+            "ibc_denom": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "additionalProperties": false
+    }
+  ]
+}

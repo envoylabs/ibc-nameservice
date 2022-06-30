@@ -1,0 +1,13 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "GetBaseDenomResponse",
+  "type": "object",
+  "required": [
+    "base_denom"
+  ],
+  "properties": {
+    "base_denom": {
+      "type": "string"
+    }
+  }
+}

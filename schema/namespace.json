@@ -1,0 +1,19 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Namespace",
+  "type": "object",
+  "required": [
+    "base_namespace",
+    "whoami_address"
+  ],
+  "properties": {
+    "base_namespace": {
+      "description": "This is an optional whoami namespace to use if set, records will be generated on the target contract as well",
+      "type": "string"
+    },
+    "whoami_address": {
+      "description": "The target whoami contract needs to be set if base namespace is set",
+      "type": "string"
+    }
+  }
+}

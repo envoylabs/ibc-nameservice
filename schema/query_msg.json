@@ -1,0 +1,125 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "QueryMsg",
+  "oneOf": [
+    {
+      "description": "Takes a short base_denom and returns all known IBC variants",
+      "type": "object",
+      "required": [
+        "get_ibc_denoms"
+      ],
+      "properties": {
+        "get_ibc_denoms": {
+          "type": "object",
+          "required": [
+            "base_denom"
+          ],
+          "properties": {
+            "base_denom": {
+              "type": "string"
+            },
+            "pagination_args": {
+              "anyOf": [
+                {
+                  "$ref": "#/definitions/PaginationArgs"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    {
+      "description": "Takes an IBC variant and returns the short base_denom",
+      "type": "object",
+      "required": [
+        "get_base_denom"
+      ],
+      "properties": {
+        "get_base_denom": {
+          "type": "object",
+          "required": [
+            "ibc_denom"
+          ],
+          "properties": {
+            "ibc_denom": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    {
+      "description": "Takes two IBC denoms and returns if they are equal",
+      "type": "object",
+      "required": [
+        "is_equal"
+      ],
+      "properties": {
+        "is_equal": {
+          "type": "object",
+          "required": [
+            "ibc_denom_one",
+            "ibc_denom_two"
+          ],
+          "properties": {
+            "ibc_denom_one": {
+              "type": "string"
+            },
+            "ibc_denom_two": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "additionalProperties": false
+    }
+  ],
+  "definitions": {
+    "Direction": {
+      "type": "string",
+      "enum": [
+        "asc",
+        "desc"
+      ]
+    },
+    "PaginationArgs": {
+      "type": "object",
+      "required": [
+        "order"
+      ],
+      "properties": {
+        "limit": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "format": "uint32",
+          "minimum": 0.0
+        },
+        "order": {
+          "$ref": "#/definitions/Direction"
+        },
+        "page": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "format": "uint32",
+          "minimum": 0.0
+        },
+        "start_after": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    }
+  }
+}
