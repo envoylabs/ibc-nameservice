@@ -7,7 +7,7 @@ use crate::query::{get_base_denom, get_ibc_denoms, is_equal};
 use cosmwasm_std::{to_binary, Binary, Deps, DepsMut, Env, MessageInfo, Response, StdResult};
 
 use crate::error::ContractError;
-use crate::msg::{ExecuteMsg, InstantiateMsg, QueryMsg};
+use crate::msg::{ExecuteMsg, InstantiateMsg, QueryMsg, SudoMsg};
 use crate::state::{Config, CONFIG};
 
 // version info for migration info
@@ -36,19 +36,24 @@ pub fn instantiate(
 }
 
 #[cfg_attr(not(feature = "library"), entry_point)]
-pub fn execute(
-    deps: DepsMut,
-    _env: Env,
-    info: MessageInfo,
-    msg: ExecuteMsg,
-) -> Result<Response, ContractError> {
+pub fn sudo(deps: DepsMut, _env: Env, msg: SudoMsg) -> Result<Response, ContractError> {
     match msg {
-        ExecuteMsg::AddIbcDenom {
+        SudoMsg::AddIbcDenom {
             base_denom,
             ibc_denom,
-        } => add_ibc_denom(deps, info, base_denom, ibc_denom),
-        ExecuteMsg::RemoveIbcDenom { ibc_denom } => remove_ibc_denom(deps, info, ibc_denom),
+        } => add_ibc_denom(deps, base_denom, ibc_denom),
+        SudoMsg::RemoveIbcDenom { ibc_denom } => remove_ibc_denom(deps, ibc_denom),
     }
+}
+
+#[cfg_attr(not(feature = "library"), entry_point)]
+pub fn execute(
+    _deps: DepsMut,
+    _env: Env,
+    _info: MessageInfo,
+    _msg: ExecuteMsg,
+) -> Result<Response, ContractError> {
+    Err(ContractError::Unauthorized {})
 }
 
 #[cfg_attr(not(feature = "library"), entry_point)]

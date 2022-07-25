@@ -2,8 +2,8 @@
 mod tests {
     use crate::msg::InstantiateMsg;
     use crate::msg::{
-        ExecuteMsg, GetBaseDenomResponse, GetIbcDenomsResponse, IsEqualResponse, PaginationArgs,
-        QueryMsg,
+        GetBaseDenomResponse, GetIbcDenomsResponse, IsEqualResponse, PaginationArgs, QueryMsg,
+        SudoMsg,
     };
     use cosmwasm_std::{Addr, Coin, Empty, StdResult, Uint128};
     use cw_multi_test::{App, AppBuilder, AppResponse, Contract, ContractWrapper, Executor};
@@ -13,7 +13,8 @@ mod tests {
             crate::contract::execute,
             crate::contract::instantiate,
             crate::contract::query,
-        );
+        )
+        .with_sudo(crate::contract::sudo);
         Box::new(contract)
     }
 
@@ -63,29 +64,29 @@ mod tests {
     fn add_ibc_denom(
         app: &mut App,
         contract_addr: &Addr,
-        sender: &str,
+
         ibc_denom: &str,
         base_denom: &str,
     ) -> anyhow::Result<AppResponse> {
-        let msg = ExecuteMsg::AddIbcDenom {
+        let msg = SudoMsg::AddIbcDenom {
             ibc_denom: ibc_denom.to_string(),
             base_denom: base_denom.to_string(),
         };
 
-        app.execute_contract(Addr::unchecked(sender), contract_addr.clone(), &msg, &[])
+        app.wasm_sudo(contract_addr.clone(), &msg)
     }
 
     fn remove_ibc_denom(
         app: &mut App,
         contract_addr: &Addr,
-        sender: &str,
+
         ibc_denom: &str,
     ) -> anyhow::Result<AppResponse> {
-        let msg = ExecuteMsg::RemoveIbcDenom {
+        let msg = SudoMsg::RemoveIbcDenom {
             ibc_denom: ibc_denom.to_string(),
         };
 
-        app.execute_contract(Addr::unchecked(sender), contract_addr.clone(), &msg, &[])
+        app.wasm_sudo(contract_addr.clone(), &msg)
     }
 
     fn query_ibc_denoms(
@@ -132,18 +133,11 @@ mod tests {
         use super::*;
 
         #[test]
-        fn non_admin_cant_add() {
-            let (mut app, contract_addr) = proper_instantiate();
-
-            add_ibc_denom(&mut app, &contract_addr, USER, "ibc/yolo", "juno").unwrap_err();
-        }
-
-        #[test]
         fn add_several_denoms() {
             let (mut app, contract_addr) = proper_instantiate();
 
-            add_ibc_denom(&mut app, &contract_addr, ADMIN_ADDR, "ibc/yolo", "juno").unwrap();
-            add_ibc_denom(&mut app, &contract_addr, ADMIN_ADDR, "ibc/wagmi", "juno").unwrap();
+            add_ibc_denom(&mut app, &contract_addr, "ibc/yolo", "juno").unwrap();
+            add_ibc_denom(&mut app, &contract_addr, "ibc/wagmi", "juno").unwrap();
 
             let ibc_denoms = query_ibc_denoms(&mut app, &contract_addr, "juno", None).unwrap();
             assert_eq!(ibc_denoms.ibc_denoms, vec!["ibc/yolo", "ibc/wagmi"]);
@@ -153,34 +147,21 @@ mod tests {
         fn add_several_denoms_then_remove() {
             let (mut app, contract_addr) = proper_instantiate();
 
-            add_ibc_denom(&mut app, &contract_addr, ADMIN_ADDR, "ibc/yolo", "juno").unwrap();
-            add_ibc_denom(&mut app, &contract_addr, ADMIN_ADDR, "ibc/wagmi", "juno").unwrap();
+            add_ibc_denom(&mut app, &contract_addr, "ibc/yolo", "juno").unwrap();
+            add_ibc_denom(&mut app, &contract_addr, "ibc/wagmi", "juno").unwrap();
 
-            remove_ibc_denom(&mut app, &contract_addr, ADMIN_ADDR, "ibc/yolo").unwrap();
+            remove_ibc_denom(&mut app, &contract_addr, "ibc/yolo").unwrap();
 
             let ibc_denoms = query_ibc_denoms(&mut app, &contract_addr, "juno", None).unwrap();
             assert_eq!(ibc_denoms.ibc_denoms, vec!["ibc/wagmi"]);
         }
 
         #[test]
-        fn non_admin_cant_remove() {
-            let (mut app, contract_addr) = proper_instantiate();
-
-            add_ibc_denom(&mut app, &contract_addr, ADMIN_ADDR, "ibc/yolo", "juno").unwrap();
-            add_ibc_denom(&mut app, &contract_addr, ADMIN_ADDR, "ibc/wagmi", "juno").unwrap();
-
-            remove_ibc_denom(&mut app, &contract_addr, USER, "ibc/yolo").unwrap_err();
-
-            let ibc_denoms = query_ibc_denoms(&mut app, &contract_addr, "juno", None).unwrap();
-            assert_eq!(ibc_denoms.ibc_denoms, vec!["ibc/yolo", "ibc/wagmi"]);
-        }
-
-        #[test]
         fn get_denom_check() {
             let (mut app, contract_addr) = proper_instantiate();
 
-            add_ibc_denom(&mut app, &contract_addr, ADMIN_ADDR, "ibc/yolo", "juno").unwrap();
-            add_ibc_denom(&mut app, &contract_addr, ADMIN_ADDR, "ibc/wagmi", "juno").unwrap();
+            add_ibc_denom(&mut app, &contract_addr, "ibc/yolo", "juno").unwrap();
+            add_ibc_denom(&mut app, &contract_addr, "ibc/wagmi", "juno").unwrap();
 
             let base_denom_one = query_base_denom(&mut app, &contract_addr, "ibc/yolo").unwrap();
             let base_denom_two = query_base_denom(&mut app, &contract_addr, "ibc/wagmi").unwrap();
@@ -194,8 +175,8 @@ mod tests {
         fn equality_check() {
             let (mut app, contract_addr) = proper_instantiate();
 
-            add_ibc_denom(&mut app, &contract_addr, ADMIN_ADDR, "ibc/yolo", "juno").unwrap();
-            add_ibc_denom(&mut app, &contract_addr, ADMIN_ADDR, "ibc/wagmi", "juno").unwrap();
+            add_ibc_denom(&mut app, &contract_addr, "ibc/yolo", "juno").unwrap();
+            add_ibc_denom(&mut app, &contract_addr, "ibc/wagmi", "juno").unwrap();
 
             let equal_response =
                 query_equality(&mut app, &contract_addr, "ibc/yolo", "ibc/wagmi").unwrap();
