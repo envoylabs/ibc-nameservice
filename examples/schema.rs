@@ -5,7 +5,7 @@ use cosmwasm_schema::{export_schema, remove_schemas, schema_for};
 
 use ibc_nameservice::msg::{
     ExecuteMsg, GetBaseDenomResponse, GetIbcDenomsResponse, InstantiateMsg, IsEqualResponse,
-    Namespace, PaginationArgs, QueryMsg,
+    Namespace, PaginationArgs, QueryMsg, SudoMsg,
 };
 use ibc_nameservice::state::{Config, IBCDenomInfo};
 
@@ -16,6 +16,7 @@ fn main() {
     remove_schemas(&out_dir).unwrap();
 
     export_schema(&schema_for!(InstantiateMsg), &out_dir);
+    export_schema(&schema_for!(SudoMsg), &out_dir);
     export_schema(&schema_for!(ExecuteMsg), &out_dir);
     export_schema(&schema_for!(QueryMsg), &out_dir);
     export_schema(&schema_for!(Config), &out_dir);
